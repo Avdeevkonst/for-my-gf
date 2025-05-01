@@ -1,0 +1,16 @@
+{
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "**venv**",
+        "**.ruff_cache",
+        "**alembic/versions",
+        "tests/**"
+    ],
+    "venvPath": ".",
+    "venv": ".venv",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false,
+    "pythonVersion": "3.13",
+    "pythonPlatform": "Linux"
+}

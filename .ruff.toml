@@ -62,6 +62,7 @@ lint.ignore = [
     "RET506",
     "PT009",
     "PT027",
+    "TRY301",
     "A002", # builtin shadowing in arguments
     "A003", # builtin shadowing in attributes
     "D203", # 1 blank line required before class docstring

@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+from fastapi import UploadFile
 from sqladmin import ModelView
 from wtforms import FileField
 
 from src.database.models import Content, User
 from src.storage.minio import upload_file
-
-if TYPE_CHECKING:
-    from fastapi import UploadFile
 
 
 class UserAdmin(ModelView, model=User):
@@ -20,14 +18,11 @@ class UserAdmin(ModelView, model=User):
     column_list = [
         User.id,
         User.telegram_id,
-        User.username,
-        User.first_name,
-        User.last_name,
-        User.registered_at,
+        User.login,
+        User.password_hash,
     ]
 
     column_details_exclude_list = []
-    form_excluded_columns = [User.registered_at]
 
     can_delete = False  # Prevent user deletion from admin
     can_create = False  # Users are created only via Telegram
@@ -56,7 +51,7 @@ class ContentAdmin(ModelView, model=Content):
 
     async def on_model_change(self, data: dict, model: Any, is_created: bool) -> None:
         """Handle file upload when content is created or updated."""
-        if data.get("file"):
+        if isinstance(data.get("file"), UploadFile):
             file: UploadFile = data["file"]
 
             # Generate unique object name (you might want to improve this)

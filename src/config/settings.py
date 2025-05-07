@@ -2,18 +2,18 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    PG_HOST: str = "postgres"
+    PG_HOST: str = "fmg-db"
     PG_PORT: str = "5432"
-    PG_NAME: str = ""
+    PG_NAME: str = "fmg"
     PG_USER: str = "postgres"
-    PG_PASS: str = ""
+    PG_PASS: str = "postgres"  # noqa: S105
 
     REDIS_HOST: str = "redis"
     REDIS_PORT: str = "6379"
 
-    MINIO_ENDPOINT: str = "minio"
+    MINIO_ENDPOINT: str = "fmg-minio:9005"
     MINIO_ACCESS_KEY: str = "minio"
-    MINIO_SECRET_KEY: str = "minio"  # noqa: S105
+    MINIO_SECRET_KEY: str = "miniopass"  # noqa: S105
 
     MINIO_SECURE: bool = True
 

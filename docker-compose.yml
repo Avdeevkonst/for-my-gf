@@ -1,0 +1,51 @@
+services:
+  app:
+    container_name: fmg-app
+    build: .
+    ports:
+      - "8099:8099"
+    entrypoint: sh -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8099 --reload --log-level debug"
+    depends_on:
+      - db
+      - minio
+    volumes:
+      - .:/app
+    networks:
+      - app-network
+
+  db:
+    container_name: fmg-db
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=fmg
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  minio:
+    container_name: fmg-minio
+    image: minio/minio
+    ports:
+      - "9005:9005"
+      - "9006:9006"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=miniopass
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9006" /data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  app-network:
+    driver: bridge

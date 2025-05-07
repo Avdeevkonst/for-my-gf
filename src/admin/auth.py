@@ -1,8 +1,48 @@
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqladmin.authentication import AuthenticationBackend
+from sqlalchemy import select
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from src.config.settings import settings
+from src.database.config import PgUnitOfWork
+from src.database.models import User
+from src.project_utils import verify_password
+
+security = HTTPBasic(auto_error=True)
+
+
+async def authenticate_admin(login: str, password: str) -> User | None:
+    """Authenticate admin user."""
+    async with PgUnitOfWork() as uow:
+        # Query for user with matching login
+        query = select(User).where(User.login == login)
+        result = await uow.execute(query)
+        user = result.scalar_one_or_none()
+
+        if not user:
+            return None
+
+        # Verify password
+        if await verify_password(password, user.password_hash):
+            return user
+
+        return None
+
+
+async def get_current_admin_user(credentials: HTTPBasicCredentials = Depends(security)) -> User:
+    """Dependency for getting current admin user."""
+    user = await authenticate_admin(credentials.username, credentials.password)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+    return user
 
 
 class AdminAuth(AuthenticationBackend):

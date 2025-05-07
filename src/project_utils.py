@@ -2,8 +2,26 @@ import re
 from types import TracebackType
 from typing import NoReturn
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
+
+ph = PasswordHasher()
+
+
+async def hash_password(password: str) -> str:
+    """Hash password using Argon2."""
+    return ph.hash(password)
+
+
+async def verify_password(password: str, password_hash: str) -> bool:
+    """Verify password against hash using Argon2."""
+    try:
+        ph.verify(password_hash, password)
+        return True
+    except VerifyMismatchError:
+        return False
 
 
 def handle_error(

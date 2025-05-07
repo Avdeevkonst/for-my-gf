@@ -1,73 +1,88 @@
-# Telegram Bot with Content Management
+# Content Management System
 
-This is a Telegram bot that allows users to manage content with steps and messages.
+A FastAPI-based content management system with admin interface and file storage support.
 
 ## Features
 
-- User registration and management
-- Content management with steps (1-20)
-- Content listing
-- Database storage with PostgreSQL
+- FastAPI-based REST API
+- Admin interface with SQLAdmin
+- Telegram ID-based authentication for admin panel
+- File storage using MinIO
+- PostgreSQL database (async)
+- Modern dependency management with `uv`
 
-## Setup
+## Requirements
 
-1. Create a virtual environment:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Linux/macOS
-```
+- Python 3.13+
+- PostgreSQL
+- MinIO server
+- `uv` package manager
 
+## Installation
+
+1. Clone the repository
 2. Install dependencies:
 ```bash
+uv venv
+source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
 
-3. Create a PostgreSQL database:
+## Configuration
+
+Create `.env` file with the following variables:
+
+```env
+# PostgreSQL
+POSTGRES_DSN=postgresql+asyncpg://user:password@localhost:5432/dbname
+
+# MinIO
+MINIO_ENDPOINT=play.min.io
+MINIO_ACCESS_KEY=your-access-key
+MINIO_SECRET_KEY=your-secret-key
+MINIO_BUCKET=your-bucket-name
+MINIO_SECURE=true  # Use HTTPS
+
+# Admin Access
+ADMIN_TELEGRAM_IDS=[123456789, 987654321]  # List of allowed Telegram IDs
+```
+
+## Running
+
+1. Start the application:
 ```bash
-createdb telegram_bot
+uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-4. Set up environment variables:
-- Copy `.env.example` to `.env`
-- Update the values in `.env` with your configuration
+2. Access the admin interface at: http://localhost:8000/admin
 
-5. Initialize the database:
-```bash
-alembic upgrade head
-```
+## Admin Interface
 
-6. Run the bot:
-```bash
-python -m src.bot.bot
-```
+The admin interface provides CRUD operations for:
+- Users (view/edit only, creation via Telegram bot)
+- Content (full CRUD with file upload support)
 
-## Usage
+Authentication is required using Telegram ID from the allowed list.
 
-The bot supports the following commands:
+## Development
 
-- `/start` - Start the bot and register user
-- `/add_content` - Add new content with step and message
-- `/list_content` - List all your content
-
-When adding content, use the following format:
-```
-Шаг: [номер от 1 до 20]
-Контент: [ваш контент]
-Сообщение: [ваше сообщение]
-```
+- Code style: flake8 with WPS plugin
+- Linting: ruff
+- Package management: uv
 
 ## Project Structure
 
 ```
 src/
-├── bot/
-│   ├── handlers/
-│   │   ├── commands.py
-│   │   └── content.py
-│   ├── middlewares/
-│   │   └── db.py
-│   └── bot.py
-└── database/
-    ├── models.py
-    └── config.py
+├── admin/
+│   ├── auth.py      # Admin authentication
+│   └── models.py    # Admin model views
+├── config/
+│   └── settings.py  # Application settings
+├── database/
+│   ├── models.py    # SQLAlchemy models
+│   └── session.py   # Database connection
+├── storage/
+│   └── minio.py     # MinIO integration
+└── main.py          # Application entry point
 ```

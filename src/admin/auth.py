@@ -2,6 +2,7 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
+from src.bot.utils.db import get_user_by_access_code
 from src.config.settings import settings
 
 
@@ -11,15 +12,17 @@ class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         """Check if user is allowed to access admin interface."""
         form = await request.form()
-        telegram_id = form.get("telegram_id", None)
+        access_code = form.get("access_code", None)
 
-        try:
-            telegram_id = int(telegram_id)  # pyright: ignore[reportArgumentType]
-        except (TypeError, ValueError):
+        if access_code is None:
             return False
+        elif isinstance(access_code, str):
+            user = await get_user_by_access_code(access_code)
+            if user is None:
+                return False
 
-        # Store telegram_id in session
-        request.session.update({"telegram_id": telegram_id})
+        # Store access_code in session
+        request.session.update({"access_code": access_code})
         return True
 
     async def logout(self, request: Request) -> bool:

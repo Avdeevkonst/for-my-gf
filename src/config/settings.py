@@ -2,20 +2,20 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    PG_HOST: str = "postgres"
+    PG_HOST: str = "172.18.0.3"
     PG_PORT: str = "5432"
-    PG_NAME: str = ""
+    PG_NAME: str = "fmg"
     PG_USER: str = "postgres"
     PG_PASS: str = ""
 
     REDIS_HOST: str = "redis"
     REDIS_PORT: str = "6379"
 
-    MINIO_ENDPOINT: str = "minio"
+    MINIO_ENDPOINT: str = "172.18.0.4:9000"
     MINIO_ACCESS_KEY: str = "minio"
     MINIO_SECRET_KEY: str = "minio"  # noqa: S105
 
-    MINIO_SECURE: bool = True
+    MINIO_SECURE: bool = False
 
     ADMIN_SECRET_KEY: str = ""
 

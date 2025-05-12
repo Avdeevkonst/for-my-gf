@@ -1,7 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import User
+from src.database.config import PgUnitOfWork
+from src.database.models import PrivateAccess, User
+
+# TODO: refactor to use uow
 
 
 async def get_or_create_user(
@@ -27,3 +30,24 @@ async def get_or_create_user(
         await session.refresh(user)
 
     return user
+
+
+async def get_private_access(session: AsyncSession, telegram_id: int) -> PrivateAccess | None:
+    query = select(PrivateAccess).where(PrivateAccess.telegram_id == telegram_id)
+    result = await session.execute(query)
+    return result.scalar_one_or_none()
+
+
+async def create_private_access(session: AsyncSession, telegram_id: int) -> PrivateAccess:
+    private_access = PrivateAccess(telegram_id=telegram_id)
+    session.add(private_access)
+    await session.commit()
+    await session.refresh(private_access)
+    return private_access
+
+
+async def get_user_by_access_code(access_code: str) -> User | None:
+    async with PgUnitOfWork() as uow:
+        query = select(User).join(PrivateAccess).where(PrivateAccess.access_code == access_code)
+        result = await uow.execute(query)
+        return result.scalar_one_or_none()

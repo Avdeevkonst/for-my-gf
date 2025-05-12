@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: content_management_api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    entrypoint: ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"]
+    networks:
+      - for_my_gf_app-network
+    volumes:
+      - ./:/app
+
+volumes:
+  static:
+
+networks:
+  for_my_gf_app-network:
+    name: for_my_gf_app-network
+    driver: bridge
+    external: true

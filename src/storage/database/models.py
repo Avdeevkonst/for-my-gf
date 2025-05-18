@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.database.base import General
+from src.storage.database.base import General
 
 
 class User(General):
@@ -26,6 +26,8 @@ class Content(General):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
     user: Mapped[User] = relationship(back_populates="contents")
+
+    __table_args__ = (Index("ix_content_user_id_step_number", user_id, step_number, unique=True),)
 
 
 class PrivateAccess(General):

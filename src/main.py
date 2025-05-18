@@ -8,7 +8,7 @@ from sqladmin import Admin
 from src.admin.auth import authentication_backend
 from src.admin.models import ContentAdmin, UserAdmin
 from src.bot.bot import start_bot_polling
-from src.database.config import dbconfig
+from src.storage.database.config import dbconfig
 
 
 @asynccontextmanager
@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     yield
 
     try:
-        await task
+        task.cancel()
     except asyncio.CancelledError:
         logger.info("Bot polling task cancelled")
 

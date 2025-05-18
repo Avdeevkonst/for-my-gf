@@ -10,6 +10,7 @@ A FastAPI-based content management system with admin interface, Telegram bot, an
 - Telegram ID-based authentication for admin panel
 - File storage using MinIO
 - PostgreSQL database (async)
+- Redis for state management
 - Modern dependency management with `uv`
 - Docker support
 
@@ -19,6 +20,7 @@ For local development:
 - Python 3.13+
 - PostgreSQL
 - MinIO server
+- Redis server
 - `uv` package manager
 - Telegram Bot Token
 
@@ -56,6 +58,10 @@ PG_PORT=5432
 PG_NAME=dbname
 PG_USER=postgres
 PG_PASS=password
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
 
 # MinIO
 MINIO_ENDPOINT=play.min.io
@@ -109,11 +115,27 @@ Access the admin interface at: http://localhost:8000/admin
 ## Telegram Bot
 
 The bot provides the following commands:
-- `/start` - Initialize user
-- `/add_content` - Add new content with step number
+- `/start` - Initialize user and show available commands
+- `/help` - Show list of available commands
+- `/add_content` - Add new content (photo with step number)
 - `/list_content` - List all your content
+- `/run` - Start or continue viewing content sequence
+- `/set_content_owner [ID]` - Set another user as content owner
+- `/reset` - Reset content viewing progress
+- `/private` - Get private access code for admin panel
 
-The bot runs in polling mode alongside the FastAPI application.
+### Adding Content
+When using `/add_content`, send a photo with caption in the format:
+```
+Шаг: [номер от 1 до 20]
+Сообщение: [ваше сообщение]
+```
+
+### Viewing Content
+1. Use `/run` to start viewing content
+2. Content will be shown step by step
+3. Use `/reset` to start over
+4. Use `/set_content_owner [ID]` to view someone else's content
 
 ## Admin Interface
 
@@ -121,13 +143,15 @@ The admin interface provides CRUD operations for:
 - Users (view/edit only, creation via Telegram bot)
 - Content (full CRUD with file upload support)
 
-Authentication is required using Telegram ID from the allowed list.
+Authentication is required using private access code obtained via the bot's `/private` command.
 
 ## Development
 
 - Code style: flake8 with WPS plugin
 - Linting: ruff
 - Package management: uv
+- State management: Redis
+- File storage: MinIO
 
 ## Project Structure
 
@@ -145,8 +169,9 @@ src/
 │   └── settings.py  # Application settings
 ├── database/
 │   ├── models.py    # SQLAlchemy models
-│   └── session.py   # Database connection
+│   └── config.py    # Database configuration
 ├── storage/
-│   └── minio.py     # MinIO integration
+│   ├── minio.py     # MinIO integration
+│   └── redis.py     # Redis state management
 └── main.py          # Application entry point
 ```

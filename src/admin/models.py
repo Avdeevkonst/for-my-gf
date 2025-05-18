@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 from sqladmin import ModelView
 from wtforms import FileField
 
-from src.database.models import Content, User
+from src.storage.database.models import Content, User
 from src.storage.minio import upload_file
 
 if TYPE_CHECKING:

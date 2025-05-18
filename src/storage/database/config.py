@@ -32,8 +32,8 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import NullPool
 
 from src.config.settings import settings
-from src.database.base import Base, PrimaryKeyUUID
 from src.project_utils import handle_error
+from src.storage.database.base import Base, PrimaryKeyUUID
 
 ModelType = TypeVar("ModelType", bound=Base)
 
@@ -108,8 +108,10 @@ class PgUnitOfWork(IUnitOfWorkBase):
 
         await self.close()
         if isinstance(exc_val, HTTPException):
+            logger.error(f"HTTPException: {exc_val.status_code} {exc_val.detail}")
             raise exc_val
         else:
+            logger.error(f"Exception: {exc_type} {exc_val} {exc_tb}")
             handle_error(exc_type, exc_val, exc_tb)
 
     async def rollback(self):
@@ -133,7 +135,7 @@ class PgUnitOfWork(IUnitOfWorkBase):
             raise NotCreatedSessionError
         await self._async_session.flush()
 
-    async def refresh(self, instance: type[ModelType]):
+    async def refresh(self, instance: object):
         if self._async_session is None:
             raise NotCreatedSessionError
         await self._async_session.refresh(instance)
@@ -188,9 +190,9 @@ class Query(Generic[ModelType]):
 
 
 class Crud(Generic[ModelType], Query[ModelType]):
-    def __init__(self, model: type[ModelType]):
+    def __init__(self, model: type[ModelType], uow: PgUnitOfWork):
         super().__init__(model=model)
-        self.uow = PgUnitOfWork()
+        self.uow = uow
 
     async def create_entity(self, payload: dict | BaseModel) -> ModelType:
         """
@@ -237,9 +239,9 @@ class Crud(Generic[ModelType], Query[ModelType]):
 
 
 class CrudEntity(Crud[ModelType]):
-    def __init__(self, model: type[ModelType]):
-        self.uow = PgUnitOfWork()
-        super().__init__(model=model)
+    def __init__(self, model: type[ModelType], uow: PgUnitOfWork):
+        self.uow = uow
+        super().__init__(model=model, uow=uow)
 
     async def get_entity(self, r_id: UUID) -> ModelType:
         model = type_cast("type[PrimaryKeyUUID]", self.model)

@@ -8,12 +8,12 @@ class Settings(BaseSettings):
     PG_USER: str = "postgres"
     PG_PASS: str = ""
 
-    REDIS_HOST: str = "redis"
+    REDIS_HOST: str = "172.18.0.4"
     REDIS_PORT: str = "6379"
 
-    MINIO_ENDPOINT: str = "172.18.0.4:9000"
+    MINIO_ENDPOINT: str = "172.18.0.5:9000"
     MINIO_ACCESS_KEY: str = "minio"
-    MINIO_SECRET_KEY: str = "minio"  # noqa: S105
+    MINIO_SECRET_KEY: str = ""
 
     MINIO_SECURE: bool = False
 
